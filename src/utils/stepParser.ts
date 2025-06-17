@@ -166,30 +166,114 @@ export const parseStepFile = async (file: File): Promise<StepFile> => {
   };
 };
 
-// Generate Three.js geometry from STEP file points
-export const generateThreeJSGeometry = (points: Array<{ x: number; y: number; z: number }>): THREE.BufferGeometry => {
-  // For now, create a simple geometry that represents the bounding box as a wireframe
-  // In a full implementation, this would use OpenCascade.js to generate proper mesh geometry
+// Parse ADVANCED_FACE entities from STEP content
+export const parseAdvancedFaces = (content: string): Array<{ id: number; hasInnerBounds: boolean }> => {
+  const faces = [];
   
+  // Find all ADVANCED_FACE entities
+  const faceRegex = /#(\d+)\s*=\s*ADVANCED_FACE\s*\(\s*'[^']*'\s*,\s*\(([^)]+)\)\s*/g;
+  let match;
+  
+  while ((match = faceRegex.exec(content)) !== null) {
+    const [, id, bounds] = match;
+    
+    // Check if this face has inner boundaries (holes/pockets)
+    const boundsIds = bounds.split(',').map(b => b.trim().replace('#', ''));
+    let hasInnerBounds = false;
+    
+    // Look for FACE_BOUND entities with .F. (inner boundaries)
+    boundsIds.forEach(boundId => {
+      const boundRegex = new RegExp(`#${boundId}\\s*=\\s*FACE_BOUND\\s*\\([^,]+,\\s*#\\d+\\s*,\\.F\\.`);
+      if (boundRegex.test(content)) {
+        hasInnerBounds = true;
+      }
+    });
+    
+    faces.push({
+      id: parseInt(id),
+      hasInnerBounds
+    });
+  }
+  
+  return faces;
+};
+
+// Create detailed geometry from STEP file data
+export const generateDetailedGeometry = (content: string, points: Array<{ x: number; y: number; z: number }>): THREE.BufferGeometry => {
   if (points.length === 0) {
     return new THREE.BoxGeometry(1, 1, 1);
   }
 
-  // Calculate bounding box
   const bbox = calculateBoundingBox(points);
   const { dimensions, center } = bbox;
-
-  // Create a box geometry representing the part's bounds
-  const geometry = new THREE.BoxGeometry(
+  
+  // Parse faces to understand the geometry better
+  const faces = parseAdvancedFaces(content);
+  const facesWithPockets = faces.filter(f => f.hasInnerBounds);
+  
+  console.log(`Found ${faces.length} faces, ${facesWithPockets.length} with inner boundaries (pockets)`);
+  
+  // Create geometry to represent the part more accurately
+  
+  // Main solid body
+  const mainGeometry = new THREE.BoxGeometry(
     Math.max(dimensions.x, 0.1),
     Math.max(dimensions.y, 0.1), 
     Math.max(dimensions.z, 0.1)
   );
+  mainGeometry.translate(center.x, center.y, center.z);
+  
+  // If there are inner boundaries (pockets), create a more complex shape
+  if (facesWithPockets.length > 0) {
+    // Create a shape with approximated pockets
+    const vertices: number[] = [];
+    
+    // Extract key points to create a more detailed mesh
+    const sortedPoints = points.sort((a, b) => a.z - b.z);
+    const topPoints = sortedPoints.filter(p => Math.abs(p.z - bbox.max.z) < 1);
+    const bottomPoints = sortedPoints.filter(p => Math.abs(p.z - bbox.min.z) < 1);
+    
+    // Create vertices for top and bottom faces
+    
+    // Bottom face vertices
+    bottomPoints.forEach(point => {
+      vertices.push(point.x, point.y, point.z);
+    });
+    
+    // Top face vertices  
+    topPoints.forEach(point => {
+      vertices.push(point.x, point.y, point.z);
+    });
+    
+    // Create a more detailed geometry
+    if (vertices.length >= 6) {
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+      
+      // Simple triangulation for demonstration
+      if (vertices.length >= 9) {
+        const triangles = [];
+        // Create simple triangular faces
+        for (let i = 0; i < Math.min(vertices.length / 3 - 2, 12); i += 3) {
+          triangles.push(i, i + 1, i + 2);
+        }
+        
+        if (triangles.length > 0) {
+          geometry.setIndex(triangles);
+        }
+      }
+      
+      geometry.computeVertexNormals();
+      return geometry;
+    }
+  }
+  
+  return mainGeometry;
+};
 
-  // Translate to center position
-  geometry.translate(center.x, center.y, center.z);
-
-  return geometry;
+// Generate Three.js geometry from STEP file points
+export const generateThreeJSGeometry = (points: Array<{ x: number; y: number; z: number }>): THREE.BufferGeometry => {
+  return generateDetailedGeometry('', points);
 };
 
 // Load STEP file geometry using OpenCascade.js

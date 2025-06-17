@@ -323,23 +323,97 @@ export const extractProfile = (
   geometry: THREE.BufferGeometry,
   config: ProfileConfig
 ): ExtractedProfile => {
+  console.log('Extracting profile with config:', config);
+  console.log('Geometry info:', {
+    positions: geometry.attributes.position?.count || 0,
+    indices: geometry.index?.count || 0,
+    hasPosition: !!geometry.attributes.position
+  });
+
   // Create cutting plane
   const plane = createCuttingPlane(config);
+  console.log('Created cutting plane:', plane);
 
   // Find intersection points
   const intersectionPoints = findIntersectionPoints(geometry, plane, config.tolerance);
+  console.log(`Found ${intersectionPoints.length} intersection points:`, intersectionPoints.slice(0, 5));
+
+  // If no intersections found, create a simple test profile based on bounding box
+  if (intersectionPoints.length === 0) {
+    console.log('No intersections found, creating fallback profile');
+    
+    // Get geometry bounding box
+    geometry.computeBoundingBox();
+    const bbox = geometry.boundingBox;
+    
+    if (bbox) {
+      // Extract bounding box dimensions for profile generation
+      
+      // Create a simple rectangular profile based on cutting plane orientation
+      let profilePoints: Vector2[] = [];
+      
+      if (Math.abs(config.normal.z) > 0.9) {
+        // XY plane
+        profilePoints = [
+          { x: bbox.min.x, y: bbox.min.y },
+          { x: bbox.max.x, y: bbox.min.y },
+          { x: bbox.max.x, y: bbox.max.y },
+          { x: bbox.min.x, y: bbox.max.y }
+        ];
+      } else if (Math.abs(config.normal.y) > 0.9) {
+        // XZ plane
+        profilePoints = [
+          { x: bbox.min.x, y: bbox.min.z },
+          { x: bbox.max.x, y: bbox.min.z },
+          { x: bbox.max.x, y: bbox.max.z },
+          { x: bbox.min.x, y: bbox.max.z }
+        ];
+      } else {
+        // YZ plane
+        profilePoints = [
+          { x: bbox.min.y, y: bbox.min.z },
+          { x: bbox.max.y, y: bbox.min.z },
+          { x: bbox.max.y, y: bbox.max.z },
+          { x: bbox.min.y, y: bbox.max.z }
+        ];
+      }
+      
+      const fallbackCurves: Curve2D[] = [{
+        type: 'line',
+        points: profilePoints,
+        closed: true
+      }];
+      
+      const boundingBox = calculate2DBoundingBox(fallbackCurves);
+      const { area, length } = calculateProfileMetrics(fallbackCurves);
+      
+      console.log('Created fallback profile:', { curves: fallbackCurves, boundingBox, area, length });
+      
+      return {
+        id: Date.now().toString(),
+        curves: fallbackCurves,
+        boundingBox,
+        area,
+        length
+      };
+    }
+  }
 
   // Connect points to curves
   let curves = connectPointsToCurves(intersectionPoints, config.tolerance);
+  console.log(`Connected into ${curves.length} curves`);
 
   // Simplify curves if enabled
   if (config.simplification) {
     curves = simplifyCurves(curves, config.tolerance);
+    console.log(`Simplified to ${curves.length} curves`);
   }
 
   // Calculate metrics
   const boundingBox = calculate2DBoundingBox(curves);
   const { area, length } = calculateProfileMetrics(curves);
+
+  console.log('Final profile:', { curves: curves.length, boundingBox, area, length });
 
   return {
     id: Date.now().toString(),

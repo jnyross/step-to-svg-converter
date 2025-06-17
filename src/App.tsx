@@ -71,7 +71,7 @@ function App() {
     
     try {
       // Import parseStepFile and related functions
-      const { parseStepFile, extractCartesianPoints, generateThreeJSGeometry } = 
+      const { parseStepFile, extractCartesianPoints, generateDetailedGeometry } = 
         await import('./utils/stepParser');
       
       // Parse the actual STEP file
@@ -82,8 +82,8 @@ function App() {
       const fileContent = await file.text();
       const cartesianPoints = extractCartesianPoints(fileContent);
       
-      // Generate Three.js geometry from parsed data
-      const parsedGeometry = generateThreeJSGeometry(cartesianPoints);
+      // Generate Three.js geometry from parsed STEP data with face information
+      const parsedGeometry = generateDetailedGeometry(fileContent, cartesianPoints);
       setGeometry(parsedGeometry);
       
       setBoundingBox(stepFileObj.boundingBox);
