@@ -3,7 +3,6 @@ import {
   ThemeProvider, 
   createTheme, 
   CssBaseline, 
-  Box, 
   Container, 
   Typography,
   AppBar,
@@ -201,41 +200,41 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
         {/* App Bar */}
         <AppBar position="static">
           <Toolbar>
-            <Engineering sx={{ mr: 2 }} />
-            <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+            <Engineering style={{ marginRight: 16 }} />
+            <Typography variant="h6" component="div" style={{ flexGrow: 1 }}>
               STEP to SVG Converter for Shaper Origin
             </Typography>
           </Toolbar>
         </AppBar>
 
         {/* Main Content */}
-        <Container maxWidth={false} sx={{ flexGrow: 1, py: 2 }}>
+        <Container maxWidth={false} style={{ flexGrow: 1, paddingTop: 16, paddingBottom: 16 }}>
           {/* File Upload */}
-          <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}>
             <FileUpload onFileUpload={handleFileUpload} disabled={isLoading} />
-          </Box>
+          </div>
 
           {/* Error Display */}
           {error && (
-            <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
+            <Alert severity="error" style={{ marginBottom: 16 }} onClose={() => setError(null)}>
               {error}
             </Alert>
           )}
 
           {/* Loading Indicator */}
           {isLoading && (
-            <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}>
               <CircularProgress />
-            </Box>
+            </div>
           )}
 
           {/* Main Interface */}
           {stepFile && (
-            <Grid container spacing={2} sx={{ height: 'calc(100vh - 200px)' }} data-testid="main-grid">
+            <Grid container spacing={2} style={{ height: 'calc(100vh - 200px)' }} data-testid="main-grid">
               {/* 3D Viewer */}
               <Grid item xs={12} md={8}>
                 <Viewer3D
@@ -275,7 +274,7 @@ function App() {
             isExporting={isExporting}
           />
         )}
-      </Box>
+      </div>
     </ThemeProvider>
   );
 }

@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import {
-  Box,
   Paper,
   Button,
   FormControl,
@@ -65,13 +64,13 @@ const ExportPanel: React.FC<ExportPanelProps> = ({
         justifyContent: 'space-between'
       }}
     >
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
         <Typography variant="body1">
           {profiles.length} profile{profiles.length !== 1 ? 's' : ''} ready
         </Typography>
         
         {profiles.length > 0 && (
-          <Box sx={{ display: 'flex', gap: 1 }}>
+          <div style={{ display: 'flex', gap: 8 }}>
             {profiles.map((profile, index) => (
               <Chip
                 key={profile.id}
@@ -80,11 +79,11 @@ const ExportPanel: React.FC<ExportPanelProps> = ({
                 variant="outlined"
               />
             ))}
-          </Box>
+          </div>
         )}
-      </Box>
+      </div>
 
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
         <FormControl size="small" sx={{ minWidth: 120 }}>
           <InputLabel>Units</InputLabel>
           <Select
@@ -130,7 +129,7 @@ const ExportPanel: React.FC<ExportPanelProps> = ({
         >
           {isExporting ? 'Exporting...' : 'Export SVG'}
         </Button>
-      </Box>
+      </div>
 
       {/* Advanced Settings Dialog/Expansion */}
       {showAdvanced && (
@@ -152,10 +151,10 @@ const ExportPanel: React.FC<ExportPanelProps> = ({
 
           <Accordion>
             <AccordionSummary expandIcon={<ExpandMore />}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                 <Palette />
                 <Typography>Color Mapping</Typography>
-              </Box>
+              </div>
             </AccordionSummary>
             <AccordionDetails>
               <Grid container spacing={2}>
@@ -203,7 +202,7 @@ const ExportPanel: React.FC<ExportPanelProps> = ({
             </AccordionDetails>
           </Accordion>
 
-          <Box sx={{ mt: 2 }}>
+          <div style={{ marginTop: 16 }}>
             <TextField
               label="Line Weight (mm)"
               type="number"
@@ -215,7 +214,7 @@ const ExportPanel: React.FC<ExportPanelProps> = ({
                 lineWeight: parseFloat(e.target.value) || 0.25
               })}
               inputProps={{ step: 0.05, min: 0.1, max: 2.0 }}
-              sx={{ mb: 2 }}
+              style={{ marginBottom: 16 }}
             />
 
             <TextField
@@ -229,10 +228,10 @@ const ExportPanel: React.FC<ExportPanelProps> = ({
                 precision: parseInt(e.target.value) || 3
               })}
               inputProps={{ min: 1, max: 6 }}
-              sx={{ mb: 2 }}
+              style={{ marginBottom: 16 }}
             />
 
-            <FormControl fullWidth size="small" sx={{ mb: 2 }}>
+            <FormControl fullWidth size="small" style={{ marginBottom: 16 }}>
               <InputLabel>Include Metadata</InputLabel>
               <Select
                 value={config.includeMetadata ? 'true' : 'false'}
@@ -246,13 +245,13 @@ const ExportPanel: React.FC<ExportPanelProps> = ({
                 <MenuItem value="false">No</MenuItem>
               </Select>
             </FormControl>
-          </Box>
+          </div>
 
-          <Alert severity="info" sx={{ mb: 2 }}>
+          <Alert severity="info" style={{ marginBottom: 16 }}>
             These settings optimize SVG output for Shaper Origin CNC machining.
           </Alert>
 
-          <Box sx={{ display: 'flex', gap: 1 }}>
+          <div style={{ display: 'flex', gap: 8 }}>
             <Button
               variant="outlined"
               onClick={resetToDefaults}
@@ -267,7 +266,7 @@ const ExportPanel: React.FC<ExportPanelProps> = ({
             >
               Close
             </Button>
-          </Box>
+          </div>
         </Paper>
       )}
     </Paper>

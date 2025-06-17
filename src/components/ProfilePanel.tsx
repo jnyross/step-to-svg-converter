@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import {
-  Box,
   Paper,
   Typography,
   Button,
@@ -104,12 +103,12 @@ const ProfilePanel: React.FC<ProfilePanelProps> = ({
   const positionRange = getPositionRange();
 
   return (
-    <Paper sx={{ p: 2, height: '100%', overflow: 'auto' }}>
+    <Paper style={{ padding: 16, height: '100%', overflow: 'auto' }}>
       <Typography variant="h6" gutterBottom>
         Profile Selection
       </Typography>
       
-      <Box sx={{ mb: 3 }}>
+      <div style={{ marginBottom: 24 }}>
         <Typography variant="subtitle2" gutterBottom>
           Cutting Plane Orientation
         </Typography>
@@ -117,40 +116,40 @@ const ProfilePanel: React.FC<ProfilePanelProps> = ({
           <Button
             variant={config.planeType === 'XY' ? 'contained' : 'outlined'}
             onClick={() => handlePlaneTypeChange('XY')}
-            sx={{ width: '40px', height: '40px' }}
+            style={{ minWidth: 40, height: 40 }}
           >
             XY
           </Button>
           <Button
             variant={config.planeType === 'XZ' ? 'contained' : 'outlined'}
             onClick={() => handlePlaneTypeChange('XZ')}
-            sx={{ width: '40px', height: '40px' }}
+            style={{ minWidth: 40, height: 40 }}
           >
             XZ
           </Button>
           <Button
             variant={config.planeType === 'YZ' ? 'contained' : 'outlined'}
             onClick={() => handlePlaneTypeChange('YZ')}
-            sx={{ width: '40px', height: '40px' }}
+            style={{ minWidth: 40, height: 40 }}
           >
             YZ
           </Button>
           <Button
             variant={config.planeType === 'CUSTOM' ? 'contained' : 'outlined'}
             onClick={() => handlePlaneTypeChange('CUSTOM')}
-            sx={{ width: '40px', height: '40px' }}
+            style={{ minWidth: 40, height: 40 }}
           >
             <CropFree />
           </Button>
         </ButtonGroup>
-      </Box>
+      </div>
 
       {config.planeType === 'CUSTOM' && (
-        <Box sx={{ mb: 3 }}>
+        <div style={{ marginBottom: 24 }}>
           <Typography variant="subtitle2" gutterBottom>
             Custom Normal Vector
           </Typography>
-          <Box sx={{ display: 'flex', gap: 1 }}>
+          <div style={{ display: 'flex', gap: 8 }}>
             <TextField
               label="X"
               type="number"
@@ -161,7 +160,7 @@ const ProfilePanel: React.FC<ProfilePanelProps> = ({
                 setCustomNormal(newNormal);
                 onConfigChange({ ...config, normal: newNormal });
               }}
-              inputProps={{ step: 0.1 }}
+              inputProps={{ step: 0.1 } as any}
             />
             <TextField
               label="Y"
@@ -173,7 +172,7 @@ const ProfilePanel: React.FC<ProfilePanelProps> = ({
                 setCustomNormal(newNormal);
                 onConfigChange({ ...config, normal: newNormal });
               }}
-              inputProps={{ step: 0.1 }}
+              inputProps={{ step: 0.1 } as any}
             />
             <TextField
               label="Z"
@@ -185,18 +184,18 @@ const ProfilePanel: React.FC<ProfilePanelProps> = ({
                 setCustomNormal(newNormal);
                 onConfigChange({ ...config, normal: newNormal });
               }}
-              inputProps={{ step: 0.1 }}
+              inputProps={{ step: 0.1 } as any}
             />
-          </Box>
-        </Box>
+          </div>
+        </div>
       )}
 
-      <Box sx={{ mb: 3 }}>
+      <div style={{ marginBottom: 24 }}>
         <Typography variant="subtitle2" gutterBottom>
           Position ({positionRange.min.toFixed(1)} to {positionRange.max.toFixed(1)} mm)
         </Typography>
         
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
           <IconButton
             onClick={() => handlePositionChange(config.position - 10)}
             size="small"
@@ -212,8 +211,8 @@ const ProfilePanel: React.FC<ProfilePanelProps> = ({
               step: 0.001,
               min: positionRange.min,
               max: positionRange.max
-            }}
-            sx={{ width: '120px' }}
+            } as any}
+            style={{ width: 120 }}
           />
           <IconButton
             onClick={() => handlePositionChange(config.position + 10)}
@@ -221,7 +220,7 @@ const ProfilePanel: React.FC<ProfilePanelProps> = ({
           >
             <Add />
           </IconButton>
-        </Box>
+        </div>
         
         <Slider
           value={config.position}
@@ -232,11 +231,11 @@ const ProfilePanel: React.FC<ProfilePanelProps> = ({
           valueLabelDisplay="auto"
           valueLabelFormat={(value) => `${value.toFixed(1)}mm`}
         />
-      </Box>
+      </div>
 
-      <Divider sx={{ my: 2 }} />
+      <Divider style={{ marginTop: 16, marginBottom: 16 }} />
 
-      <Box sx={{ mb: 3 }}>
+      <div style={{ marginBottom: 24 }}>
         <Typography variant="subtitle2" gutterBottom>
           Extraction Settings
         </Typography>
@@ -251,8 +250,8 @@ const ProfilePanel: React.FC<ProfilePanelProps> = ({
             ...config,
             tolerance: parseFloat(e.target.value) || 0.01
           })}
-          inputProps={{ step: 0.001, min: 0.001, max: 1 }}
-          sx={{ mb: 2 }}
+          inputProps={{ step: 0.001, min: 0.001, max: 1 } as any}
+          style={{ marginBottom: 16 }}
         />
         
         <FormControl fullWidth size="small">
@@ -268,9 +267,9 @@ const ProfilePanel: React.FC<ProfilePanelProps> = ({
             <MenuItem value="false">Disabled</MenuItem>
           </Select>
         </FormControl>
-      </Box>
+      </div>
 
-      <Box sx={{ mb: 3 }}>
+      <div style={{ marginBottom: 24 }}>
         <Button
           variant="outlined"
           fullWidth
@@ -279,20 +278,19 @@ const ProfilePanel: React.FC<ProfilePanelProps> = ({
         >
           {showCuttingPlane ? 'Hide' : 'Show'} Cutting Plane
         </Button>
-      </Box>
+      </div>
 
-      <Card sx={{ mb: 3 }}>
+      <Card style={{ marginBottom: 24 }}>
         <CardContent>
           <Typography variant="subtitle2" gutterBottom>
             2D Profile Preview
           </Typography>
-          <Box 
-            sx={{ 
+          <div 
+            style={{ 
               width: '100%', 
-              height: '200px', 
-              backgroundColor: 'grey.100',
-              border: '1px solid',
-              borderColor: 'grey.300',
+              height: 200, 
+              backgroundColor: '#f5f5f5',
+              border: '1px solid #e0e0e0',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center'
@@ -301,7 +299,7 @@ const ProfilePanel: React.FC<ProfilePanelProps> = ({
             <Typography variant="body2" color="textSecondary">
               Preview will appear here
             </Typography>
-          </Box>
+          </div>
         </CardContent>
       </Card>
 
