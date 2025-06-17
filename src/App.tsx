@@ -70,45 +70,34 @@ function App() {
     setError(null);
     
     try {
-      // Create STEP file object
-      const stepFileObj: StepFile = {
-        id: Date.now().toString(),
-        filename: file.name,
-        size: file.size,
-        uploadDate: new Date(),
-        entities: [], // Will be populated by STEP parser
-        boundingBox: {
-          min: { x: 0, y: 0, z: 0 },
-          max: { x: 0, y: 0, z: 0 },
-          center: { x: 0, y: 0, z: 0 },
-          dimensions: { x: 0, y: 0, z: 0 }
-        }
-      };
+      // Import parseStepFile and related functions
+      const { parseStepFile, extractCartesianPoints, generateThreeJSGeometry } = 
+        await import('./utils/stepParser');
       
+      // Parse the actual STEP file
+      const stepFileObj = await parseStepFile(file);
       setStepFile(stepFileObj);
       
-      // TODO: Implement actual STEP file parsing with OpenCascade.js
-      // For now, create a simple test geometry
-      const testGeometry = new THREE.BoxGeometry(10, 5, 2);
-      setGeometry(testGeometry);
+      // Extract cartesian points for geometry generation
+      const fileContent = await file.text();
+      const cartesianPoints = extractCartesianPoints(fileContent);
       
-      const testBoundingBox = {
-        min: { x: -5, y: -2.5, z: -1 },
-        max: { x: 5, y: 2.5, z: 1 },
-        center: { x: 0, y: 0, z: 0 },
-        dimensions: { x: 10, y: 5, z: 2 }
-      };
-      setBoundingBox(testBoundingBox);
+      // Generate Three.js geometry from parsed data
+      const parsedGeometry = generateThreeJSGeometry(cartesianPoints);
+      setGeometry(parsedGeometry);
       
-      // Update profile config with bounding box
+      setBoundingBox(stepFileObj.boundingBox);
+      
+      // Update profile config with real bounding box
       setProfileConfig(prev => ({
         ...prev,
-        position: testBoundingBox.center.z,
-        origin: testBoundingBox.center
+        position: stepFileObj.boundingBox.center.z,
+        origin: stepFileObj.boundingBox.center
       }));
       
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to process STEP file');
+      console.error('STEP file parsing error:', err);
     } finally {
       setIsLoading(false);
     }
