@@ -1,5 +1,5 @@
 // SVG Export functionality optimized for Shaper Origin
-import { ExtractedProfile, SvgExportConfig, Curve2D, Vector2 } from '../types';
+import { ExtractedProfile, SvgExportConfig, Curve2D } from '../types';
 
 // Generate SVG path data from 2D curves
 export const generateSvgPath = (curve: Curve2D, precision: number = 3): string => {

@@ -9,6 +9,96 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 // Extend the catalog
 extend({ OrbitControls });
 
+// Cutting Plane Component
+interface CuttingPlaneProps {
+  position: number;
+  normal: { x: number; y: number; z: number };
+  boundingBox: {
+    min: { x: number; y: number; z: number };
+    max: { x: number; y: number; z: number };
+  };
+}
+
+const CuttingPlane: React.FC<CuttingPlaneProps> = ({ position, normal, boundingBox }) => {
+  const meshRef = useRef<THREE.Mesh>(null);
+  
+  useEffect(() => {
+    if (meshRef.current) {
+      const mesh = meshRef.current;
+      
+      // Calculate plane size based on bounding box
+      const width = Math.abs(boundingBox.max.x - boundingBox.min.x) * 1.2;
+      const height = Math.abs(boundingBox.max.y - boundingBox.min.y) * 1.2;
+      const depth = Math.abs(boundingBox.max.z - boundingBox.min.z) * 1.2;
+      const size = Math.max(width, height, depth);
+      
+      // Update plane geometry
+      mesh.geometry = new THREE.PlaneGeometry(size, size);
+      
+      // Calculate position based on normal and position value
+      // Position is an absolute coordinate, not an offset from center
+      let planePosition = { x: 0, y: 0, z: 0 };
+      
+      if (Math.abs(normal.z) > 0.9) {
+        // XY plane (normal is Z)
+        planePosition = {
+          x: (boundingBox.min.x + boundingBox.max.x) / 2,
+          y: (boundingBox.min.y + boundingBox.max.y) / 2,
+          z: position
+        };
+      } else if (Math.abs(normal.y) > 0.9) {
+        // XZ plane (normal is Y)
+        planePosition = {
+          x: (boundingBox.min.x + boundingBox.max.x) / 2,
+          y: position,
+          z: (boundingBox.min.z + boundingBox.max.z) / 2
+        };
+      } else if (Math.abs(normal.x) > 0.9) {
+        // YZ plane (normal is X)
+        planePosition = {
+          x: position,
+          y: (boundingBox.min.y + boundingBox.max.y) / 2,
+          z: (boundingBox.min.z + boundingBox.max.z) / 2
+        };
+      } else {
+        // Custom plane
+        const center = {
+          x: (boundingBox.min.x + boundingBox.max.x) / 2,
+          y: (boundingBox.min.y + boundingBox.max.y) / 2,
+          z: (boundingBox.min.z + boundingBox.max.z) / 2
+        };
+        planePosition = {
+          x: center.x + normal.x * position,
+          y: center.y + normal.y * position,
+          z: center.z + normal.z * position
+        };
+      }
+      
+      mesh.position.set(planePosition.x, planePosition.y, planePosition.z);
+      
+      // Orient the plane based on the normal
+      const normalVector = new THREE.Vector3(normal.x, normal.y, normal.z).normalize();
+      mesh.lookAt(
+        mesh.position.x + normalVector.x,
+        mesh.position.y + normalVector.y,
+        mesh.position.z + normalVector.z
+      );
+    }
+  }, [position, normal, boundingBox]);
+  
+  return (
+    <mesh ref={meshRef}>
+      <planeGeometry args={[1, 1]} />
+      <meshBasicMaterial 
+        color={0xff6666} 
+        transparent 
+        opacity={0.3} 
+        side={THREE.DoubleSide}
+      />
+    </mesh>
+  );
+};
+
 // Custom OrbitControls component
 function Controls() {
   const { camera, gl } = useThree();
@@ -64,7 +154,6 @@ const SceneContent: React.FC<{
   renderMode: Viewer3DProps['renderMode'];
 }> = ({ geometry, boundingBox, cuttingPlane, renderMode }) => {
   const meshRef = useRef<THREE.Mesh>(null);
-  const planeRef = useRef<THREE.Mesh>(null);
 
   useFrame(() => {
     // Animation updates if needed
@@ -110,20 +199,11 @@ const SceneContent: React.FC<{
       
       {/* Cutting Plane */}
       {cuttingPlane && cuttingPlane.visible && boundingBox && (
-        <mesh ref={planeRef}>
-          <planeGeometry 
-            args={[
-              Math.abs(boundingBox.max.x - boundingBox.min.x),
-              Math.abs(boundingBox.max.z - boundingBox.min.z)
-            ]} 
-          />
-          <meshBasicMaterial 
-            color={0xff6666} 
-            transparent 
-            opacity={0.3} 
-            side={THREE.DoubleSide}
-          />
-        </mesh>
+        <CuttingPlane 
+          position={cuttingPlane.position}
+          normal={cuttingPlane.normal}
+          boundingBox={boundingBox}
+        />
       )}
       
       {/* Bounding box visualization */}

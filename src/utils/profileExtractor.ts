@@ -1,6 +1,6 @@
 // 2D Profile Extraction from 3D geometry
 import * as THREE from 'three';
-import { ProfileConfig, ExtractedProfile, Curve2D, Vector2, Vector3, BoundingBox2D } from '../types';
+import { ProfileConfig, ExtractedProfile, Curve2D, Vector2, BoundingBox2D } from '../types';
 
 // Create cutting plane from configuration
 export const createCuttingPlane = (config: ProfileConfig): THREE.Plane => {

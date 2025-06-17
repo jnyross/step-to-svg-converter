@@ -109,40 +109,22 @@ function App() {
     
     setIsLoading(true);
     try {
-      // TODO: Implement actual 2D profile extraction
-      // For now, create a test profile
-      const testProfile: ExtractedProfile = {
-        id: Date.now().toString(),
-        curves: [
-          {
-            type: 'line',
-            points: [
-              { x: -5, y: -2.5 },
-              { x: 5, y: -2.5 },
-              { x: 5, y: 2.5 },
-              { x: -5, y: 2.5 }
-            ],
-            closed: true
-          }
-        ],
-        boundingBox: {
-          min: { x: -5, y: -2.5 },
-          max: { x: 5, y: 2.5 },
-          center: { x: 0, y: 0 },
-          dimensions: { x: 10, y: 5 }
-        },
-        area: 50,
-        length: 30
-      };
+      // Import profile extraction functionality
+      const { extractProfile } = await import('./utils/profileExtractor');
       
-      setProfiles(prev => [...prev, testProfile]);
+      // Extract 2D profile from the geometry using current cutting plane configuration
+      const extractedProfile = extractProfile(geometry, profileConfig);
+      
+      setProfiles(prev => [...prev, extractedProfile]);
+      
+      console.log('Profile extracted successfully:', extractedProfile);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to extract profile');
+      console.error('Profile extraction error:', err);
     } finally {
       setIsLoading(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [stepFile, geometry]);
+  }, [stepFile, geometry, profileConfig]);
 
   // SVG export handler
   const handleExport = useCallback(async () => {
@@ -150,37 +132,17 @@ function App() {
     
     setIsExporting(true);
     try {
-      // TODO: Implement actual SVG generation
-      // For now, create a simple SVG string
-      const svgContent = `<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" 
-     viewBox="-5 -2.5 10 5" 
-     width="10mm" 
-     height="5mm">
-  <metadata>
-    <title>STEP to SVG Export</title>
-    <description>Generated from ${stepFile?.filename}</description>
-    <date>${new Date().toISOString()}</date>
-  </metadata>
-  <g id="profile-1" stroke="${exportConfig.colorMapping.throughCut}" 
-     stroke-width="${exportConfig.lineWeight}" fill="none">
-    <rect x="-5" y="-2.5" width="10" height="5"/>
-  </g>
-</svg>`;
+      // Import SVG export functionality
+      const { downloadSvg } = await import('./utils/svgExporter');
       
-      // Download the SVG file
-      const blob = new Blob([svgContent], { type: 'image/svg+xml' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${stepFile?.filename.replace(/\.(step|stp)$/i, '')}_profile.svg`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      // Export profiles to SVG file
+      const filename = stepFile?.filename || 'profile';
+      downloadSvg(profiles, exportConfig, filename);
       
+      console.log('SVG export completed successfully');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to export SVG');
+      console.error('SVG export error:', err);
     } finally {
       setIsExporting(false);
     }
